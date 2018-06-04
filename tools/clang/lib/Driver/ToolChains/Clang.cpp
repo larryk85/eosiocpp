@@ -1874,7 +1874,8 @@ void Clang::DumpCompilationDatabase(Compilation &C, StringRef Filename,
       CDB << ", \"" << escape(it) << "\"";
   }
   Buf = "--target=";
-  Buf += Target;
+//  Buf += Target;
+  Buf += "wasm32";
   CDB << ", \"" << escape(Buf) << "\"]},\n";
 }
 
@@ -3539,9 +3540,9 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   // -fhosted is default.
   // TODO: Audit uses of KernelOrKext and see where it'd be more appropriate to
   // use Freestanding.
-  bool Freestanding =
-      Args.hasFlag(options::OPT_ffreestanding, options::OPT_fhosted, false) ||
-      KernelOrKext;
+  bool Freestanding = true;
+//      Args.hasFlag(options::OPT_ffreestanding, options::OPT_fhosted, false) ||
+//      KernelOrKext;
   if (Freestanding)
     CmdArgs.push_back("-ffreestanding");
 
@@ -3692,16 +3693,17 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     PS4cpu::addProfileRTArgs(getToolChain(), Args, CmdArgs);
 
   // Pass options for controlling the default header search paths.
-  if (Args.hasArg(options::OPT_nostdinc)) {
-    CmdArgs.push_back("-nostdsysteminc");
-    CmdArgs.push_back("-nobuiltininc");
-  } else {
-    if (Args.hasArg(options::OPT_nostdlibinc))
-      CmdArgs.push_back("-nostdsysteminc");
-    Args.AddLastArg(CmdArgs, options::OPT_nostdincxx);
-    Args.AddLastArg(CmdArgs, options::OPT_nobuiltininc);
-  }
+//  if (Args.hasArg(options::OPT_nostdinc)) {
+//    CmdArgs.push_back("-nostdsysteminc");
+//    CmdArgs.push_back("-nobuiltininc");
+//  } else {
+//    if (Args.hasArg(options::OPT_nostdlibinc))
+//      CmdArgs.push_back("-nostdsysteminc");
+//    Args.AddLastArg(CmdArgs, options::OPT_nostdincxx);
+//    Args.AddLastArg(CmdArgs, options::OPT_nobuiltininc);
+//  }
 
+  CmdArgs.push_back("-nostdsysteminc");
   // Pass the path to compiler resource files.
   CmdArgs.push_back("-resource-dir");
   CmdArgs.push_back(D.ResourceDir.c_str());
@@ -4181,10 +4183,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   ToolChain::RTTIMode RTTIMode = getToolChain().getRTTIMode();
 
-  if (KernelOrKext || (types::isCXX(InputType) &&
-                       (RTTIMode == ToolChain::RM_Disabled)))
-    CmdArgs.push_back("-fno-rtti");
+//  if (KernelOrKext || (types::isCXX(InputType) &&
+//                       (RTTIMode == ToolChain::RM_Disabled)))
+//    CmdArgs.push_back("-fno-rtti");
 
+  CmdArgs.push_back("-fno-rtti");
   // -fshort-enums=0 is default for all architectures except Hexagon.
   if (Args.hasFlag(options::OPT_fshort_enums, options::OPT_fno_short_enums,
                    getToolChain().getArch() == llvm::Triple::hexagon))
@@ -4240,7 +4243,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                              .Case("c++14", "-std=c++14")
                              .Case("c++17", "-std=c++17")
                              .Case("c++latest", "-std=c++2a")
-                             .Default("");
+                             .Default("-std=c++14");
       if (LanguageStandard.empty())
         D.Diag(clang::diag::warn_drv_unused_argument)
             << StdArg->getAsString(Args);
@@ -4270,11 +4273,12 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // -fthreadsafe-static is default, except for MSVC compatibility versions less
   // than 19.
-  if (!Args.hasFlag(options::OPT_fthreadsafe_statics,
-                    options::OPT_fno_threadsafe_statics,
-                    !IsWindowsMSVC || IsMSVC2015Compatible))
-    CmdArgs.push_back("-fno-threadsafe-statics");
+//  if (!Args.hasFlag(options::OPT_fthreadsafe_statics,
+//                    options::OPT_fno_threadsafe_statics,
+//                    !IsWindowsMSVC || IsMSVC2015Compatible))
+//    CmdArgs.push_back("-fno-threadsafe-statics");
 
+  CmdArgs.push_back("-fno-threadsafe-statics");
   // -fno-delayed-template-parsing is default, except when targeting MSVC.
   // Many old Windows SDK versions require this to parse.
   // FIXME: MSVC introduced /Zc:twoPhase- to disable this behavior in their
