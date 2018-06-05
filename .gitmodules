@@ -1,0 +1,3 @@
+[submodule "eosio-llvm"]
+	path = eosio-llvm
+	url = git@github.com:larryk85/llvm
